@@ -1,0 +1,112 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Little List | To-do</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+  </head>
+  <body>
+    <main class="page">
+      <header class="topbar">
+        <a class="brand" href="{{ url_for('index') }}"><span class="brand-mark">✓</span> little list</a>
+        {% if session.get("user_id") %}
+          <form action="{{ url_for('logout') }}" method="post">
+            <button class="text-button" type="submit">Log out</button>
+          </form>
+        {% else %}
+          <a class="text-button" href="#account">Get started <span aria-hidden="true">↗</span></a>
+        {% endif %}
+      </header>
+
+      {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+          <div class="messages" role="status">
+            {% for category, message in messages %}
+              <p class="message {{ category }}">{{ message }}</p>
+            {% endfor %}
+          </div>
+        {% endif %}
+      {% endwith %}
+
+      {% if session.get("user_id") %}
+        <section class="todo-panel">
+          <p class="eyebrow">YOUR PERSONAL SPACE</p>
+          <h1>Your tasks<span class="period">.</span></h1>
+          <p class="subtitle">One thing at a time, {{ session.get("username") }}.</p>
+
+          <form class="add-form" action="{{ url_for('add_todo') }}" method="post">
+            <label class="visually-hidden" for="title">Add a task</label>
+            <input id="title" name="title" placeholder="What needs doing?" maxlength="120" required>
+            <button class="add-button" type="submit" aria-label="Add task">+</button>
+          </form>
+
+          <ul class="todo-list">
+            {% for todo in todos %}
+              <li class="todo-item{% if todo.completed %} is-complete{% endif %}">
+                <form action="{{ url_for('toggle_todo', todo_id=todo.id) }}" method="post">
+                  <button class="check-button" type="submit" aria-label="Mark {{ todo.title }} {% if todo.completed %}incomplete{% else %}complete{% endif %}">
+                    {% if todo.completed %}✓{% endif %}
+                  </button>
+                </form>
+                <span class="todo-title">{{ todo.title }}</span>
+                <form action="{{ url_for('delete_todo', todo_id=todo.id) }}" method="post">
+                  <button class="delete-button" type="submit" aria-label="Delete {{ todo.title }}">×</button>
+                </form>
+              </li>
+            {% else %}
+              <li class="empty-state">Your list is clear. Add a task to get started.</li>
+            {% endfor %}
+          </ul>
+          <p class="list-note">{{ todos|length }} task{% if todos|length != 1 %}s{% endif %} on your list</p>
+        </section>
+      {% else %}
+        <section class="welcome">
+          <div class="welcome-copy">
+            <p class="eyebrow">A LITTLE MORE CLARITY</p>
+            <h1>Make room for<br>what <span>matters.</span></h1>
+            <p class="subtitle">A calm, simple place to keep track of the things you want to do.</p>
+            <a class="primary-button" href="#account">Start your list <span aria-hidden="true">→</span></a>
+            <p class="micro-copy">Free to use. One task at a time.</p>
+          </div>
+          <div class="preview-card" aria-hidden="true">
+            <div class="preview-heading"><span>MONDAY, YOUR WAY</span><span class="sun">☼</span></div>
+            <h2>A fresh start<span class="period">.</span></h2>
+            <div class="preview-row"><span class="preview-check checked">✓</span><span class="crossed">Make a little plan</span></div>
+            <div class="preview-row"><span class="preview-check"></span><span>Do the important thing</span></div>
+            <div class="preview-row"><span class="preview-check"></span><span>Take a proper break</span></div>
+            <div class="preview-footer"><span>Small steps count.</span><span>01 / 03</span></div>
+          </div>
+        </section>
+
+        <section class="account" id="account">
+          <div class="account-intro">
+            <p class="eyebrow">GET STARTED</p>
+            <h2>Your list, your space.</h2>
+            <p class="subtitle">Sign in or create an account to keep your tasks together.</p>
+          </div>
+          <div class="account-forms">
+            <form class="account-form" action="{{ url_for('login') }}" method="post">
+              <h3>Welcome back</h3>
+              <label for="login-username">Username</label>
+              <input id="login-username" name="username" autocomplete="username" required>
+              <label for="login-password">Password</label>
+              <input id="login-password" name="password" type="password" autocomplete="current-password" required>
+              <button class="primary-button full-button" type="submit">Log in <span aria-hidden="true">→</span></button>
+            </form>
+            <form class="account-form" action="{{ url_for('register') }}" method="post">
+              <h3>New around here?</h3>
+              <label for="register-username">Choose a username</label>
+              <input id="register-username" name="username" autocomplete="username" required>
+              <label for="register-password">Create a password <span class="hint">(8+ characters)</span></label>
+              <input id="register-password" name="password" type="password" autocomplete="new-password" minlength="8" required>
+              <button class="primary-button full-button" type="submit">Create account <span aria-hidden="true">→</span></button>
+            </form>
+          </div>
+        </section>
+      {% endif %}
+
+      <footer><span>little list</span><span>A small step is still a step.</span></footer>
+    </main>
+  </body>
+</html>
